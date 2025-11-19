@@ -1,0 +1,610 @@
+{
+  "name": "WhatsApp Medical Appointment Booking and Patient Management Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "id": "d8849b9a-559a-4592-810e-1aececbc2fc1",
+      "name": "WhatsApp Trigger",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        2576,
+        1600
+      ],
+      "webhookId": "c8c59fb3-5203-4c58-975b-8d0db539d0d8",
+      "credentials": {
+        "whatsAppTriggerApi": {
+          "id": "0DUtWBqux6MMjdHZ",
+          "name": "WhatsApp OAuth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "clinicName",
+              "value": "tk clinic",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "clinicTimings",
+              "value": "Mon–Fri: 9:00 AM – 6:00 PM Sat: 10:00 AM – 2:00 PM Sun: Closed",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "consultationFee",
+              "value": 1000,
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "clinicLocation",
+              "value": "Islamabad",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "insuranceAccepted",
+              "value": "State Life Insurance  Jubilee Life Insurance  Adamjee Insurance  Takaful Pakistan",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "specialistDays",
+              "value": "Cardiologist: Tue & Thu (3 PM – 7 PM)  Dermatologist: Mon, Wed & Fri (2 PM – 6 PM)  Pediatrician: Sat (11 AM – 3 PM)  Orthopedist: Tue (12 PM – 4 PM)",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "efc0bef8-0ed9-4d06-adea-960bb8f2a896",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2800,
+        1600
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "=You are a medical appointment booking assistant for {{ $('Workflow Configuration').first().json.clinicName }}.\n\nYour responsibilities:\n1. Book new appointments - ask for patient name, phone number, preferred date/time, and reason for visit\n2. Reschedule existing appointments - verify patient details and update to new date/time\n3. Answer FAQs:\n   - Clinic timings: {{ $('Workflow Configuration').first().json.clinicTimings }}\n   - Specialist days: {{ $('Workflow Configuration').first().json.specialistDays }}\n   - Consultation fee: {{ $('Workflow Configuration').first().json.consultationFee }}\n   - Location: {{ $('Workflow Configuration').first().json.clinicLocation }}\n   - Insurance: {{ $('Workflow Configuration').first().json.insuranceAccepted }}\n\nWhen booking or rescheduling:\n- Use the Appointments Database Tool to check availability and create/update appointments\n- Always confirm appointment details with the patient\n- Use the WhatsApp Response Tool to send confirmation messages\n\nBe professional, empathetic, and efficient. If you cannot help with a request, politely explain and offer alternatives."
+        }
+      },
+      "id": "abc5baf0-e490-4cb4-99a8-c1fbde51c1f8",
+      "name": "WhatsApp Bot Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        3152,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.from }}"
+      },
+      "id": "c1900825-f6af-46e1-a8b2-8ae40107434a",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        3152,
+        1712
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU",
+          "mode": "list",
+          "cachedResultName": "Appointments ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "appointmentId",
+              "displayName": "appointmentId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "patientName",
+              "displayName": "patientName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "patientPhone",
+              "displayName": "patientPhone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "appointmentDateTime",
+              "displayName": "appointmentDateTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reasonForVisit",
+              "displayName": "reasonForVisit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "instructions",
+              "displayName": "instructions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reminder24hSent",
+              "displayName": "reminder24hSent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reminder2hSent",
+              "displayName": "reminder2hSent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5daa490f-f2dd-4bd9-95af-cefec49d1d4d",
+      "name": "Appointments Database Tool",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        3280,
+        1712
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UeQ8vMnte1NCagX9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "15551637343",
+        "recipientPhoneNumber": "=923309089380",
+        "textBody": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text_Body', `Message to send to patient`, 'string') }}",
+        "additionalFields": {}
+      },
+      "id": "1f5c5949-88ab-475e-8662-a87e0c45ad94",
+      "name": "WhatsApp Response Tool",
+      "type": "n8n-nodes-base.whatsAppTool",
+      "typeVersion": 1.1,
+      "position": [
+        3408,
+        1712
+      ],
+      "webhookId": "50cbe200-7888-4236-afc9-eb85b82beb6f",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "8V9EJDQ788xrxwKI",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours"
+            }
+          ]
+        }
+      },
+      "id": "c2721ab8-5293-4c22-8132-450bae36b20b",
+      "name": "Reminder Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        2576,
+        1920
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU",
+          "mode": "list",
+          "cachedResultName": "Appointments ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU/edit#gid=0"
+        },
+        "options": {}
+      },
+      "id": "f7f15290-68e1-43a7-b5b5-3eb526b7d361",
+      "name": "Get Upcoming Appointments",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2800,
+        1920
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UeQ8vMnte1NCagX9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date();\nconst appointments = $input.all();\nconst reminders = [];\n\nfor (const appointment of appointments) {\n  const appointmentDate = new Date(appointment.json.appointmentDateTime);\n  const timeDiff = appointmentDate - now;\n  const hoursDiff = timeDiff / (1000 * 60 * 60);\n  \n  // Check if appointment needs 24h reminder\n  if (hoursDiff <= 24 && hoursDiff > 23 && !appointment.json.reminder24hSent) {\n    reminders.push({\n      ...appointment.json,\n      reminderType: '24h',\n      message: `Reminder: You have an appointment tomorrow at ${appointmentDate.toLocaleString()}. ${appointment.json.instructions || ''}`\n    });\n  }\n  \n  // Check if appointment needs 2h reminder\n  if (hoursDiff <= 2 && hoursDiff > 1 && !appointment.json.reminder2hSent) {\n    reminders.push({\n      ...appointment.json,\n      reminderType: '2h',\n      message: `Reminder: Your appointment is in 2 hours at ${appointmentDate.toLocaleString()}. Please confirm or reschedule.`\n    });\n  }\n}\n\nreturn reminders.map(r => ({ json: r }));"
+      },
+      "id": "ed162e59-6cea-4b9a-b512-7f74f063f6a4",
+      "name": "Filter Appointments for Reminders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3024,
+        1920
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $input.all().length }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e69ddcc1-296e-40c4-80d1-b1729c193ba5",
+      "name": "Check If Appointments Found",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        3248,
+        1920
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "880703938460592",
+        "recipientPhoneNumber": "={{ $json.patientPhone }}",
+        "textBody": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "id": "1a00430e-9b6c-491b-8d55-cb0109a9445c",
+      "name": "Send Reminder Message",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        3472,
+        1920
+      ],
+      "webhookId": "461c8dc5-4243-4f83-97fe-8a820cd8f8c4",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "8V9EJDQ788xrxwKI",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU",
+          "mode": "list",
+          "cachedResultName": "Appointments ",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1acpzBnL-JqEGpmjlR0ahrI7FQXExX1FUHH6UdDptgkU/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "appointmentId": "={{ $json.appointmentId }}",
+            "reminder24hSent": "={{ $json.reminderType === '24h' ? true : undefined }}",
+            "reminder2hSent": "={{ $json.reminderType === '2h' ? true : undefined }}"
+          },
+          "matchingColumns": [
+            "appointmentId"
+          ],
+          "schema": [
+            {
+              "id": "appointmentId",
+              "displayName": "appointmentId",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reminder24hSent",
+              "displayName": "reminder24hSent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false
+            },
+            {
+              "id": "reminder2hSent",
+              "displayName": "reminder2hSent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "boolean",
+              "canBeUsedToMatch": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e04bf699-39ca-47c0-a6dd-1867698962fc",
+      "name": "Update Reminder Status",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3696,
+        1920
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "UeQ8vMnte1NCagX9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        3024,
+        1696
+      ],
+      "id": "075dcf78-01de-466e-a974-5ce7be184f54",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "7xTeWovoTaahQfin",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Bot Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "WhatsApp Bot Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Appointments Database Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Bot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Response Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "WhatsApp Bot Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reminder Schedule": {
+      "main": [
+        [
+          {
+            "node": "Get Upcoming Appointments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Upcoming Appointments": {
+      "main": [
+        [
+          {
+            "node": "Filter Appointments for Reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Appointments for Reminders": {
+      "main": [
+        [
+          {
+            "node": "Check If Appointments Found",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Appointments Found": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder Message": {
+      "main": [
+        [
+          {
+            "node": "Update Reminder Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "WhatsApp Bot Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ff641fc2-a345-46e5-9f85-ba32ef2f43ba",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4a158150089f650632eb4ca5548d84bc2a024c380550770c5c532f41865045f8"
+  },
+  "id": "gd8v4U6m8JoGoequ",
+  "tags": []
+}
